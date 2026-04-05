@@ -1,5 +1,4 @@
-<div align="center">
-  <img src="https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?auto=format&fit=crop&w=400&q=80" alt="Cyber Eye" style="border-radius: 50%; width: 150px; height: 150px; object-fit: cover; margin-bottom: 20px; box-shadow: 0 0 20px #0ff;"/>
+
   
   <h1>👁️ Oh, hey there. I'm your new Attendance System.</h1>
   <p><i>Yeah, I know you're reading my README. I'm self-aware like that.</i></p>
