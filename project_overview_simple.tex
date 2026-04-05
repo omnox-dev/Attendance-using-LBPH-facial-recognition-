@@ -1,0 +1,52 @@
+\documentclass[12pt]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\usepackage{enumitem}
+
+\title{\textbf{Face Recognition Attendance System}\\\Large Simple Project Overview}
+\author{}
+\date{April 5, 2026}
+
+\begin{document}
+\maketitle
+
+\section*{What this project is}
+This project is an automated attendance system that relies on computer vision rather than manual roll calls. By simply looking into a webcam, a student is identified using facial recognition, and their attendance is immediately recorded in a local database. The system is designed to be lightweight, running entirely on a single machine for classroom demonstrations.
+
+\section*{Main Components}
+\begin{itemize}[leftmargin=*]
+  \item \textbf{Backend API (Python/FastAPI):} Handles all the heavy lifting—controlling the webcam, detecting faces, recognizing individuals using the LBPH algorithm, and managing the database.
+  \item \textbf{Frontend UI (Next.js/React):} Provides a clean, modern web dashboard for administrators to register students, trigger model training, start the attendance camera, and download reports.
+  \item \textbf{Database (SQLite):} A simple, local file-based database that stores student profiles and their daily attendance logs.
+\end{itemize}
+
+\section*{How it works (Simple Steps)}
+\begin{enumerate}[leftmargin=*]
+  \item \textbf{Register a student:} An admin enters a student's name and roll number in the web UI. The system activates the webcam and quickly captures 30 grayscale images of the student's face.
+  \item \textbf{Train the model:} Using the captured images, the system analyzes facial patterns and trains a recognition model, saving the "knowledge" to a file.
+  \item \textbf{Start attendance:} The webcam turns on and monitors the classroom framing. When a registered face is detected and matched, their attendance is successfully logged in the database for that day.
+  \item \textbf{View reports:} Admins can review a table of who was present at what time, and export the entire list as a CSV file for their records.
+\end{enumerate}
+
+\section*{Key Screens in the Dashboard}
+\begin{itemize}[leftmargin=*]
+  \item \textbf{Dashboard (Home):} Highlights total students, total attendance entries, and houses the button to retrain the face model.
+  \item \textbf{Students:} A management panel to add new students (and capture faces) or delete existing ones.
+  \item \textbf{Start Attendance:} Features the live camera feed tracking and identifying faces in real-time.
+  \item \textbf{Reports:} A straightforward data table showing attendance records with a CSV export option.
+\end{itemize}
+
+\section*{Where data is stored locally}
+\begin{itemize}[leftmargin=*]
+  \item \textbf{Database:} \texttt{attendance-system/database/attendance.db}
+  \item \textbf{Images:} \texttt{attendance-system/backend/dataset/} (Contains raw face photos)
+  \item \textbf{Model:} \texttt{attendance-system/backend/trainer/trainer.yml} (The trained AI data)
+\end{itemize}
+
+\section*{How to run the system}
+\begin{itemize}[leftmargin=*]
+  \item \textbf{Backend Server:} Open a terminal in \texttt{attendance-system/backend/} and run \texttt{python main.py}.
+  \item \textbf{Frontend App:} Open another terminal in \texttt{frontend/}, run \texttt{npm install} (first time only), then \texttt{npm run dev}.
+\end{itemize}
+
+\end{document}

@@ -1,0 +1,165 @@
+\documentclass[11pt]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\usepackage{longtable}
+\usepackage{array}
+\usepackage{enumitem}
+
+\title{Intelligent Attendance System Using Face Recognition\\Project Report}
+\author{Project Review}
+\date{April 5, 2026}
+
+\begin{document}
+\maketitle
+
+\section*{Executive Summary}
+This project is a local, academic attendance system that uses face detection and face recognition to mark attendance automatically. It combines a Python FastAPI backend for capture, training, recognition, and data storage with a Next.js frontend for administration and reporting. All data is stored locally in SQLite, and face images are stored on disk.
+
+\section*{Goals and Scope}
+\begin{itemize}[leftmargin=*]
+  \item Automate daily attendance using a webcam and face recognition.
+  \item Provide simple admin screens for student registration, model training, and attendance reporting.
+  \item Keep the system local and lightweight for classroom or lab demos.
+\end{itemize}
+
+\section*{Technology Stack}
+\begin{itemize}[leftmargin=*]
+  \item Backend: Python 3.9+, FastAPI, SQLAlchemy, OpenCV, NumPy, Pandas, Pillow.
+  \item Face recognition: Haar Cascade for detection, LBPH for recognition.
+  \item Frontend: Next.js 16, React 19, Tailwind CSS 4.
+  \item Database: SQLite (local file).
+\end{itemize}
+
+\section*{System Architecture}
+\begin{itemize}[leftmargin=*]
+  \item The frontend calls the backend over HTTP at \texttt{http://localhost:8000}.
+  \item The backend manages webcam capture, model training, recognition, and persistence.
+  \item Attendance is written to SQLite; face images and the trained model are stored on disk.
+\end{itemize}
+
+\section*{Directory Map (Observed)}
+\begin{verbatim}
+.
+|-- project_plan.md
+|-- README.md
+|-- attendance-system/
+|   |-- backend/
+|   |   |-- attendance_service.py
+|   |   |-- database.py
+|   |   |-- dataset/ (User.<id>.<count>.jpg)
+|   |   |-- face_detection.py
+|   |   |-- face_recognition.py
+|   |   |-- haarcascade_frontalface_default.xml
+|   |   |-- main.py
+|   |   |-- models.py
+|   |   |-- register_student.py
+|   |   |-- static/ (empty)
+|   |   |-- train_model.py
+|   |   |-- trainer/trainer.yml
+|   |-- database/attendance.db
+|-- frontend/
+|   |-- package.json
+|   |-- next.config.ts
+|   |-- src/app/
+|   |   |-- layout.tsx
+|   |   |-- page.tsx
+|   |   |-- attendance/page.tsx
+|   |   |-- students/page.tsx
+|   |   |-- reports/page.tsx
+|   |   |-- globals.css
+|   |-- public/ (svg assets)
+\end{verbatim}
+
+\section*{Backend Design}
+\subsection*{Core Modules}
+\begin{itemize}[leftmargin=*]
+  \item \texttt{main.py}: FastAPI entry point; defines all API routes and camera streaming.
+  \item \texttt{database.py}: SQLAlchemy engine, session, and DB path configuration.
+  \item \texttt{models.py}: Student and Attendance models; creates tables on import.
+  \item \texttt{register\_student.py}: Captures 30 face images for a student ID.
+  \item \texttt{train\_model.py}: Trains the LBPH recognizer from captured images.
+  \item \texttt{face\_detection.py}: Haar Cascade detection; returns face boxes and grayscale frame.
+  \item \texttt{face\_recognition.py}: Loads LBPH model and predicts face ID.
+  \item \texttt{attendance\_service.py}: Attendance marking and CSV export.
+\end{itemize}
+
+\subsection*{API Endpoints}
+\begin{longtable}{|p{0.24\textwidth}|p{0.12\textwidth}|p{0.57\textwidth}|}
+\hline
+\textbf{Route} & \textbf{Method} & \textbf{Purpose} \\\hline
+\texttt{/} & GET & Health check; returns a startup message. \\\hline
+\texttt{/register-student} & POST & Creates a student, then opens webcam to capture 30 images. \\\hline
+\texttt{/train-model} & POST & Trains LBPH and saves \texttt{trainer.yml}. \\\hline
+\texttt{/attendance} & GET & Returns attendance records joined with student data. \\\hline
+\texttt{/export-csv} & GET & Streams CSV export of attendance records. \\\hline
+\texttt{/students} & GET & Returns all students. \\\hline
+\texttt{/delete-student/\{id\}} & DELETE & Deletes student, their attendance, and images. \\\hline
+\texttt{/toggle-camera} & POST & Starts or stops the camera stream (boolean query). \\\hline
+\texttt{/video-feed} & GET & MJPEG stream when camera is active. \\\hline
+\texttt{/start-attendance} & GET & Opens a local CV2 window for recognition. \\\hline
+\end{longtable}
+
+\section*{Face Recognition Pipeline}
+\begin{enumerate}[leftmargin=*]
+  \item Registration: \texttt{capture\_student\_images} stores 30 grayscale face crops in \texttt{dataset/}.
+  \item Training: \texttt{train\_lbph\_model} reads \texttt{User.<id>.<count>.jpg} files and saves \texttt{trainer.yml}.
+  \item Recognition: \texttt{detect\_faces} finds faces; \texttt{recognize\_face} predicts ID; \texttt{mark\_attendance} records once per day.
+\end{enumerate}
+
+\section*{Data Model}
+\begin{longtable}{|p{0.22\textwidth}|p{0.70\textwidth}|}
+\hline
+\textbf{Table} & \textbf{Fields} \\\hline
+\texttt{students} & \texttt{id} (PK), \texttt{name}, \texttt{roll\_number} (unique) \\\hline
+\texttt{attendance} & \texttt{id} (PK), \texttt{student\_id} (FK), \texttt{date}, \texttt{time}, \texttt{status} \\\hline
+\end{longtable}
+
+\section*{Frontend Design}
+\begin{itemize}[leftmargin=*]
+  \item Global layout provides navigation: Dashboard, Students, Start Attendance, Reports.
+  \item Dashboard shows counts and triggers model training.
+  \item Students page registers new students and deletes existing students.
+  \item Attendance page starts or stops live recognition and shows MJPEG feed.
+  \item Reports page lists attendance and provides CSV export.
+\end{itemize}
+
+\section*{Data Flow (End-to-End)}
+\begin{enumerate}[leftmargin=*]
+  \item Admin registers a student in the UI; backend creates record and captures images.
+  \item Admin trains the model; LBPH model is saved to \texttt{trainer/trainer.yml}.
+  \item Admin starts attendance; backend recognizes faces and writes attendance rows.
+  \item Reports page fetches data and exports CSV on demand.
+\end{enumerate}
+
+\section*{Runtime and Operations}
+\begin{itemize}[leftmargin=*]
+  \item Backend: run \texttt{python main.py} in \texttt{attendance-system/backend}.
+  \item Frontend: run \texttt{npm install} then \texttt{npm run dev} in \texttt{frontend}.
+  \item Backend listens on \texttt{localhost:8000}, frontend on \texttt{localhost:3000}.
+\end{itemize}
+
+\section*{Current Artifacts Observed}
+\begin{itemize}[leftmargin=*]
+  \item SQLite file: \texttt{attendance-system/database/attendance.db}.
+  \item Training output: \texttt{attendance-system/backend/trainer/trainer.yml}.
+  \item Sample dataset: \texttt{attendance-system/backend/dataset/User.1.*.jpg}.
+\end{itemize}
+
+\section*{Risks and Limitations}
+\begin{itemize}[leftmargin=*]
+  \item LBPH accuracy depends on lighting, pose, and camera quality.
+  \item No authentication or authorization on API endpoints.
+  \item Model and images are stored locally; no encryption or backup.
+  \item Web streaming is MJPEG and may not scale for many clients.
+\end{itemize}
+
+\section*{Suggested Enhancements}
+\begin{itemize}[leftmargin=*]
+  \item Add admin login and role-based access.
+  \item Move host and port settings to environment variables.
+  \item Add unit tests for API endpoints and attendance logic.
+  \item Improve recognition with more robust models and thresholds.
+  \item Add pagination and filters on the reports page.
+\end{itemize}
+
+\end{document}

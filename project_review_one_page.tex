@@ -1,0 +1,48 @@
+\documentclass[10pt]{article}
+\usepackage[margin=0.7in]{geometry}
+\usepackage{enumitem}
+\usepackage{sectsty}
+
+\sectionfont{\large\bfseries}
+\subsectionfont{\normalsize\bfseries}
+
+\title{\vspace{-2em}\Large \textbf{Project Defense Cheat Sheet: Face Recognition Attendance System}}
+\author{}
+\date{\vspace{-2em}}
+
+\begin{document}
+\maketitle
+
+\section*{1. Elevator Pitch}
+An automated, local attendance system that replaces manual roll-calls with real-time facial recognition. It provides a web-based dashboard (React/Next.js) for educators to register students, train the recognition model, and mark attendance automatically via webcam using a Python (FastAPI) backend.
+
+\section*{2. Technology Stack \& Justifications (Why did you choose these?)}
+\begin{itemize}[leftmargin=*, parsep=0pt, itemsep=3pt]
+    \item \textbf{Backend:} Python / FastAPI. \textit{Why?} High performance, excellent integration with data/ML libraries (OpenCV), and automatic API documentation.
+    \item \textbf{Computer Vision:} OpenCV (Haar Cascades \& LBPH). \textit{Why?} Efficient enough to run on standard CPUs without requiring expensive GPUs. 
+    \item \textbf{Frontend:} Next.js \& Tailwind CSS. \textit{Why?} Rapid UI development, responsive modern interface, and component-based architecture.
+    \item \textbf{Database:} SQLite (via SQLAlchemy). \textit{Why?} Zero-configuration, file-based database ideal for an academic, standalone project.
+\end{itemize}
+
+\section*{3. How It Works (The Workflow)}
+\begin{enumerate}[leftmargin=*, parsep=0pt, itemsep=3pt]
+    \item \textbf{Registration:} UI sends student details. Backend opens camera, detects face using Haar Cascade, captures 30 grayscale face crops, and saves them locally.
+    \item \textbf{Training:} The LBPH recognizer processes the saved dataset, extracting features to create a single trained model file (\texttt{trainer.yml}).
+    \item \textbf{Recognition \& Attendance:} During live feed, faces are continuously detected. The LBPH model predicts the ID based on confidence scores. Recognized students are logged in SQLite (strictly once per day).
+\end{enumerate}
+
+\section*{4. Key Algorithms (Crucial for VIVA/Review)}
+\begin{itemize}[leftmargin=*, parsep=0pt, itemsep=3pt]
+    \item \textbf{Face Detection (Haar Cascades):} An object detection method based on Haar-like features. It slides a window over the image, quickly discarding non-face regions. \textit{Optimization used:} We scale frames down by 50\% during detection to maintain high FPS.
+    \item \textbf{Face Recognition (LBPH):} Local Binary Patterns Histograms. Divides the face into small grids, compares each pixel to its neighbors to create a binary number, forming a histogram. It compares these histograms to known records. \textit{Benefit:} Works well even if lighting varies slightly.
+\end{itemize}
+
+\section*{5. Known Limitations \& Future Scope (Anticipate their critiques)}
+\begin{itemize}[leftmargin=*, parsep=0pt, itemsep=3pt]
+    \item \textbf{Spoofing Vulnerability:} Can be tricked by a photograph. \textit{Future Fix:} Integrate liveness detection (e.g., blink detection or depth sensing).
+    \item \textbf{Security:} No login system for the administrator dashboard. \textit{Future Fix:} Add JWT-based authentication.
+    \item \textbf{Scalability:} SQLite and LBPH might slow down with thousands of students. \textit{Future Fix:} Migrate to PostgreSQL and a Deep Learning model (e.g., FaceNet, dlib) for large-scale deployments.
+    \item \textbf{Lighting Dependency:} Heavy shadows can lower accuracy. \textit{Future Fix:} Add pre-processing steps like histogram equalization to normalize lighting.
+\end{itemize}
+
+\end{document}
